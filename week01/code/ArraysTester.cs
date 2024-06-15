@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 public static class ArraysTester {
     /// <summary>
     /// Entry point for the tests
@@ -26,6 +29,7 @@ public static class ArraysTester {
         RotateListRight(numbers, 9);
         Console.WriteLine($"<List>{{{string.Join(',', numbers)}}}"); // <List>{1, 2, 3, 4, 5, 6, 7, 8, 9}
     }
+
     /// <summary>
     /// This function will produce an array of size 'length' starting with 'number' followed by multiples of 'number'.  For 
     /// example, MultiplesOf(7, 5) will result in: {7, 14, 21, 28, 35}.  Assume that length is a positive
@@ -34,12 +38,24 @@ public static class ArraysTester {
     /// <returns>array of doubles that are the multiples of the supplied number</returns>
     private static double[] MultiplesOf(double number, int length)
     {
-        // TODO Problem 1 Start
-        // Remember: Using comments in your program, write down your process for solving this problem
-        // step by step before you write the code. The plan should be clear enough that it could
-        // be implemented by another person.
+        // Validate input
+        if (length <= 0)
+        {
+            Console.WriteLine("Length must be a positive integer greater than 0.");
+            return new double[0];
+        }
 
-        return new double[0]; // replace this return statement with your own
+        // Initialize array
+        double[] multiples = new double[length];
+
+        // Calculate multiples
+        for (int i = 0; i < length; i++)
+        {
+            multiples[i] = number * (i + 1);
+        }
+
+        // Return the array of multiples
+        return multiples;
     }
     
     /// <summary>
@@ -52,10 +68,24 @@ public static class ArraysTester {
     /// </summary>
     private static void RotateListRight(List<int> data, int amount)
     {
-        // TODO Problem 2 Start
-        // Remember: Using comments in your program, write down your process for solving this problem
-        // step by step before you write the code. The plan should be clear enough that it could
-        // be implemented by another person.
+        // Validate input
+        if (amount < 1 || amount > data.Count)
+        {
+            throw new ArgumentException("Amount must be in the range of 1 and data.Count, inclusive.");
+        }
 
+        // Calculate split index
+        int splitIndex = data.Count - amount;
+
+        // Create sublists
+        List<int> firstPart = data.GetRange(splitIndex, amount);
+        List<int> secondPart = data.GetRange(0, splitIndex);
+
+        // Rotate list
+        firstPart.AddRange(secondPart);
+
+        // Update original list
+        data.Clear();
+        data.AddRange(firstPart);
     }
 }
