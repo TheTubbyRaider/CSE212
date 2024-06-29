@@ -3,91 +3,193 @@ using System.Text.Json;
 public static class SetsAndMapsTester {
     public static void Run() {
         // Problem 1: Find Pairs with Sets
-        Console.WriteLine("\n=========== Finding Pairs TESTS ===========");
-        DisplayPairs(new[] { "am", "at", "ma", "if", "fi" });
-        // ma & am
-        // fi & if
-        Console.WriteLine("---------");
-        DisplayPairs(new[] { "ab", "bc", "cd", "de", "ba" });
-        // ba & ab
-        Console.WriteLine("---------");
-        DisplayPairs(new[] { "ab", "ba", "ac", "ad", "da", "ca" });
-        // ba & ab
-        // da & ad
-        // ca & ac
-        Console.WriteLine("---------");
-        DisplayPairs(new[] { "ab", "ac" }); // No pairs displayed
-        Console.WriteLine("---------");
-        DisplayPairs(new[] { "ab", "aa", "ba" });
-        // ba & ab
-        Console.WriteLine("---------");
-        DisplayPairs(new[] { "23", "84", "49", "13", "32", "46", "91", "99", "94", "31", "57", "14" });
-        // 32 & 23
-        // 94 & 49
-        // 31 & 13
+            static void DisplayPairs(string[] words)
+            {
+                HashSet<string> wordSet = new HashSet<string>(words);
+                HashSet<string> pairs = new HashSet<string>();
 
+                foreach (string word in words)
+                {
+                    string reversed = new string(word.Reverse().ToArray());
+                    if (wordSet.Contains(reversed) && !pairs.Contains(word) && !pairs.Contains(reversed))
+                    {
+                        Console.WriteLine($"{word} & {reversed}");
+                        pairs.Add(word);
+                        pairs.Add(reversed);
+                    }
+                }
+            }
         // Problem 2: Degree Summary
-        // Sample Test Cases (may not be comprehensive) 
-        Console.WriteLine("\n=========== Census TESTS ===========");
-        Console.WriteLine(string.Join(", ", SummarizeDegrees("census.txt")));
-        // Results may be in a different order:
-        // <Dictionary>{[Bachelors, 5355], [HS-grad, 10501], [11th, 1175],
-        // [Masters, 1723], [9th, 514], [Some-college, 7291], [Assoc-acdm, 1067],
-        // [Assoc-voc, 1382], [7th-8th, 646], [Doctorate, 413], [Prof-school, 576],
-        // [5th-6th, 333], [10th, 933], [1st-4th, 168], [Preschool, 51], [12th, 433]}
+            private static Dictionary<string, int> SummarizeDegrees(string filePath)            {
+                Dictionary<string, int> degreeSummary = new Dictionary<string, int>();
+
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    // Skip the header row
+                    reader.ReadLine();
+
+                    while (!reader.EndOfStream)
+                    {
+                        string[] fields = reader.ReadLine().Split(',');
+                        string degree = fields[3];
+
+                        if (degreeSummary.ContainsKey(degree))
+                        {
+                            degreeSummary[degree]++;
+                        }
+                        else
+                        {
+                            degreeSummary[degree] = 1;
+                        }
+                    }
+                }
+
+                return degreeSummary;
+            }
 
         // Problem 3: Anagrams
-        // Sample Test Cases (may not be comprehensive) 
-        Console.WriteLine("\n=========== Anagram TESTS ===========");
-        Console.WriteLine(IsAnagram("CAT", "ACT")); // true
-        Console.WriteLine(IsAnagram("DOG", "GOOD")); // false
-        Console.WriteLine(IsAnagram("AABBCCDD", "ABCD")); // false
-        Console.WriteLine(IsAnagram("ABCCD", "ABBCD")); // false
-        Console.WriteLine(IsAnagram("BC", "AD")); // false
-        Console.WriteLine(IsAnagram("Ab", "Ba")); // true
-        Console.WriteLine(IsAnagram("A Decimal Point", "Im a Dot in Place")); // true
-        Console.WriteLine(IsAnagram("tom marvolo riddle", "i am lord voldemort")); // true
-        Console.WriteLine(IsAnagram("Eleven plus Two", "Twelve Plus One")); // true
-        Console.WriteLine(IsAnagram("Eleven plus One", "Twelve Plus One")); // false
+            public static bool IsAnagram(string word1, string word2)
+            {
+                // Remove spaces and convert to lowercase
+                word1 = new string(word1.Replace(" ", "").ToLower().ToArray());
+                word2 = new string(word2.Replace(" ", "").ToLower().ToArray());
 
+                // Check if the lengths are different
+                if (word1.Length != word2.Length)
+                    return false;
+
+                // Create dictionaries to store character counts
+                Dictionary<char, int> charCount1 = new Dictionary<char, int>();
+                Dictionary<char, int> charCount2 = new Dictionary<char, int>();
+
+                // Count characters in each word
+                foreach (char c in word1)
+                {
+                    if (charCount1.ContainsKey(c))
+                        charCount1[c]++;
+                    else
+                        charCount1[c] = 1;
+                }
+
+                foreach (char c in word2)
+                {
+                    if (charCount2.ContainsKey(c))
+                        charCount2[c]++;
+                    else
+                        charCount2[c] = 1;
+                }
+
+                // Compare character counts
+                return charCount1.OrderBy(kvp => kvp.Key).SequenceEqual(charCount2.OrderBy(kvp => kvp.Key));
+            }
         // Problem 4: Maze
-        Console.WriteLine("\n=========== Maze TESTS ===========");
-        Dictionary<ValueTuple<int, int>, bool[]> map = SetupMazeMap();
-        var maze = new Maze(map);
-        maze.ShowStatus(); // Should be at (1,1)
-        maze.MoveUp(); // Error
-        maze.MoveLeft(); // Error
-        maze.MoveRight();
-        maze.MoveRight(); // Error
-        maze.MoveDown();
-        maze.MoveDown();
-        maze.MoveDown();
-        maze.MoveRight();
-        maze.MoveRight();
-        maze.MoveUp();
-        maze.MoveRight();
-        maze.MoveDown();
-        maze.MoveLeft();
-        maze.MoveDown(); // Error
-        maze.MoveRight();
-        maze.MoveDown();
-        maze.MoveDown();
-        maze.MoveRight();
-        maze.ShowStatus(); // Should be at (6,6)
+            public class Maze
+            {
+                private Dictionary<ValueTuple<int, int>, bool[]> map;
+                private ValueTuple<int, int> currentPosition;
 
+                public Maze(Dictionary<ValueTuple<int, int>, bool[]> map)
+                {
+                    this.map = map;
+                    currentPosition = new ValueTuple<int, int>(1, 1);
+                }
+
+                public void ShowStatus()
+                {
+                    Console.WriteLine($"Current position: ({currentPosition.Item1}, {currentPosition.Item2})");
+                }
+
+                public void MoveLeft()
+                {
+                    var newPosition = new ValueTuple<int, int>(currentPosition.Item1 - 1, currentPosition.Item2);
+                    if (map.ContainsKey(newPosition) && map[newPosition][0])
+                    {
+                        currentPosition = newPosition;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cannot move left. Blocked by a wall.");
+                    }
+                }
+
+                public void MoveRight()
+                {
+                    var newPosition = new ValueTuple<int, int>(currentPosition.Item1 + 1, currentPosition.Item2);
+                    if (map.ContainsKey(newPosition) && map[newPosition][1])
+                    {
+                        currentPosition = newPosition;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cannot move right. Blocked by a wall.");
+                    }
+                }
+
+                public void MoveUp()
+                {
+                    var newPosition = new ValueTuple<int, int>(currentPosition.Item1, currentPosition.Item2 - 1);
+                    if (map.ContainsKey(newPosition) && map[newPosition][2])
+                    {
+                        currentPosition = newPosition;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cannot move up. Blocked by a wall.");
+                    }
+                }
+
+                public void MoveDown()
+                {
+                    var newPosition = new ValueTuple<int, int>(currentPosition.Item1, currentPosition.Item2 + 1);
+                    if (map.ContainsKey(newPosition) && map[newPosition][3])
+                    {
+                        currentPosition = newPosition;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cannot move down. Blocked by a wall.");
+                    }
+                }
+            }
         // Problem 5: Earthquake
-        // Sample Test Cases (may not be comprehensive) 
-        Console.WriteLine("\n=========== Earthquake TESTS ===========");
-        EarthquakeDailySummary();
+            using System;
+            using System.Net.Http;
+            using System.Text.Json;
 
-        // Sample output from the function.  Number of earthquakes, places, and magnitudes will vary.
-        // 1km NE of Pahala, Hawaii - Mag 2.36
-        // 58km NW of Kandrian, Papua New Guinea - Mag 4.5
-        // 16km NNW of Truckee, California - Mag 0.7
-        // 9km S of Idyllwild, CA - Mag 0.25
-        // 14km SW of Searles Valley, CA - Mag 0.36
-        // 4km SW of Volcano, Hawaii - Mag 1.99
-    }
+            public class FeatureCollection
+            {
+                public Feature[] Features { get; set; }
+            }
+
+            public class Feature
+            {
+                public Properties Properties { get; set; }
+            }
+
+            public class Properties
+            {
+                public string Place { get; set; }
+                public double Mag { get; set; }
+            }
+
+            private static async void EarthquakeDailySummary()
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    var response = await httpClient.GetAsync("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson");
+                    response.EnsureSuccessStatusCode();
+
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(jsonData);
+
+                    Console.WriteLine("\n=========== Earthquake TESTS ===========");
+                    foreach (var feature in featureCollection.Features)
+                    {
+                        var properties = feature.Properties;
+                        Console.WriteLine($"{properties.Place} - Mag {properties.Mag}");
+                    }
+                }
+            }    }
 
     /// <summary>
     /// The words parameter contains a list of two character 
