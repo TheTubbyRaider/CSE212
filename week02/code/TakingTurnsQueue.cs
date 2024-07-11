@@ -8,7 +8,7 @@ public class TakingTurnsQueue
     public int Length => _people.Length;
 
     /// <summary>
-    /// Add new people to the queue with a name and number of turns
+    /// Add a person to the queue with a name and number of turns remaining.
     /// </summary>
     /// <param name="name">Name of the person</param>
     /// <param name="turns">Number of turns remaining</param>
@@ -19,29 +19,30 @@ public class TakingTurnsQueue
     }
 
     /// <summary>
-    /// Get the next person in the queue and display them. The person should
-    /// go to the back of the queue again unless the turns variable shows that they 
-    /// have no more turns left. Note that a turns value of 0 or less means the 
-    /// person has an infinite number of turns. An error message is displayed 
-    /// if the queue is empty.
+    /// Get the next person in the queue and display their name.
+    /// Re-enqueue the person unless they have no more turns left (turns <= 0).
+    /// Display an error message if the queue is empty.
     /// </summary>
     public void GetNextPerson()
     {
         if (_people.IsEmpty())
         {
-            Console.WriteLine("No one in the queue.");
+            Console.WriteLine("Error: Queue is empty.");
+            return;
+        }
+
+        Person person = _people.Dequeue();
+        Console.WriteLine(person.Name);
+
+        if (person.Turns > 0)
+        {
+            person.Turns--; // Decrease turns if finite
+            _people.Enqueue(person);
         }
         else
         {
-            Person person = _people.Dequeue();
-            if (person.Turns > 1)
-                person.Turns -= 1;
-            else if (person.Turns <= 0)
-                person.Turns = 0; // Handle infinite turns scenario
-
+            // For turns <= 0 (infinite turns), no need to decrease turns
             _people.Enqueue(person);
-
-            Console.WriteLine(person.Name);
         }
     }
 
