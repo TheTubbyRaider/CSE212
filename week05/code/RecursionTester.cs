@@ -146,9 +146,15 @@ public static class RecursionTester {
     /// n &lt;= 0, just return 0.   A loop should not be used.
     /// </summary>
     public static int SumSquaresRecursive(int n) {
-        // TODO Start Problem 1
-        return 0;
+        // Base case: if n is less than or equal to 0, return 0
+        if (n <= 0) {
+            return 0;
+        }
+        
+        // Recursive case: sum of squares from 1^2 to n^2
+        return n * n + SumSquaresRecursive(n - 1);
     }
+
 
     /// <summary>
     /// #############
@@ -170,8 +176,18 @@ public static class RecursionTester {
     /// and the length of the letters list).
     /// </summary>
     public static void PermutationsChoose(string letters, int size, string word = "") {
-        // TODO Start Problem 2
+        // Base case: if word length reaches size, print the word
+        if (word.Length == size) {
+            Console.WriteLine(word);
+            return;
+        }
+        
+        // Recursive case: iterate through each letter and recursively call with extended word
+        for (int i = 0; i < letters.Length; i++) {
+            PermutationsChoose(letters, size, word + letters[i]);
+        }
     }
+
 
     /// <summary>
     /// #############
@@ -218,21 +234,36 @@ public static class RecursionTester {
     /// The last test case is commented out because it will not work
     /// until the memoization is implemented.
     /// </summary>
-    public static decimal CountWaysToClimb(int s, Dictionary<int, decimal>? remember = null) {
-        // Base Cases
-        if (s == 0)
-            return 0;
-        if (s == 1)
-            return 1;
-        if (s == 2)
-            return 2;
-        if (s == 3)
-            return 4;
-
-        // Solve using recursion
-        decimal ways = CountWaysToClimb(s - 1) + CountWaysToClimb(s - 2) + CountWaysToClimb(s - 3);
-        return ways;
+public static decimal CountWaysToClimb(int s, Dictionary<int, decimal>? remember = null) {
+    // Initialize the memoization dictionary if it's null
+    if (remember == null) {
+        remember = new Dictionary<int, decimal>();
     }
+    
+    // Base Cases
+    if (s == 0)
+        return 1; // Base case: 1 way to stay on the ground (doing nothing)
+    if (s == 1)
+        return 1; // Base case: 1 way to reach the first step
+    if (s == 2)
+        return 2; // Base case: 2 ways to reach the second step (1+1 or 2)
+    if (s == 3)
+        return 4; // Base case: 4 ways to reach the third step (1+1+1, 1+2, 2+1, 3)
+
+    // Check if the result for s is already computed and memoized
+    if (remember.ContainsKey(s)) {
+        return remember[s];
+    }
+
+    // Recursive case: Calculate using memoization
+    decimal ways = CountWaysToClimb(s - 1, remember) + CountWaysToClimb(s - 2, remember) + CountWaysToClimb(s - 3, remember);
+    
+    // Memoize the result for future use
+    remember[s] = ways;
+    
+    return ways;
+}
+
 
     /// <summary>
     /// #############
@@ -248,8 +279,29 @@ public static class RecursionTester {
     /// some of the string functions like IndexOf and [..X] / [X..] to be useful in solving this problem.
     /// </summary>
     public static void WildcardBinary(string pattern) {
-        // TODO Start Problem 4
+        GenerateBinaryStrings(pattern, 0, "");
     }
+
+    private static void GenerateBinaryStrings(string pattern, int index, string current) {
+        // Base case: if index reaches end of pattern, print current binary string
+        if (index == pattern.Length) {
+            Console.WriteLine(current);
+            return;
+        }
+        
+        // Recursive case: check current character in pattern
+        if (pattern[index] == '*') {
+            // Replace '*' with '0' and recursively generate binary strings
+            GenerateBinaryStrings(pattern, index + 1, current + '0');
+            
+            // Replace '*' with '1' and recursively generate binary strings
+            GenerateBinaryStrings(pattern, index + 1, current + '1');
+        } else {
+            // Append the current character from pattern to current string and continue
+            GenerateBinaryStrings(pattern, index + 1, current + pattern[index]);
+        }
+    }
+
 
     /// <summary>
     /// Use recursion to Print all paths that start at (0,0) and end at the
@@ -264,7 +316,59 @@ public static class RecursionTester {
         // currPath.Add((1,2)); // Use this syntax to add to the current path
 
         // TODO Start Problem 5
-        // ADD CODE HERE
+        static void SolveMaze(int[,] maze, int x = 0, int y = 0, List<(int, int)>? currPath = null) {
+    // Initialize currPath if it's null
+    if (currPath == null) {
+        currPath = new List<(int, int)>();
+    }
+    
+    // Add current position to the path
+    currPath.Add((x, y));
+
+    // Check if we've reached the end of the maze
+    if (IsEnd(maze, x, y)) {
+        Console.WriteLine("Path found:");
+        PrintPath(currPath);
+        return;
+    }
+
+    // Try moving in all possible directions: right, left, down, up
+    if (IsValidMove(maze, x + 1, y)) {
+        SolveMaze(maze, x + 1, y, new List<(int, int)>(currPath)); // Move right
+    }
+    if (IsValidMove(maze, x - 1, y)) {
+        SolveMaze(maze, x - 1, y, new List<(int, int)>(currPath)); // Move left
+    }
+    if (IsValidMove(maze, x, y + 1)) {
+        SolveMaze(maze, x, y + 1, new List<(int, int)>(currPath)); // Move down
+    }
+    if (IsValidMove(maze, x, y - 1)) {
+        SolveMaze(maze, x, y - 1, new List<(int, int)>(currPath)); // Move up
+    }
+    
+    // Backtrack: remove current position from the path
+    currPath.RemoveAt(currPath.Count - 1);
+}
+
+// Utility function to check if a position is the end of the maze
+    static bool IsEnd(int[,] maze, int x, int y) {
+        return maze[x, y] == 2;
+    }
+
+    // Utility function to check if a move is valid
+    static bool IsValidMove(int[,] maze, int x, int y) {
+        int n = maze.GetLength(0); // Assuming maze is square
+        return x >= 0 && x < n && y >= 0 && y < n && maze[x, y] != 0; // Valid if within bounds and not a wall
+    }
+
+    // Utility function to print the current path
+    static void PrintPath(List<(int, int)> path) {
+        foreach (var point in path) {
+            Console.Write($"({point.Item1},{point.Item2}) ");
+        }
+        Console.WriteLine();
+    }
+
 
         // Console.WriteLine(currPath.AsString()); // Use this to print out your path when you find the solution
     }
